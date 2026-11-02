@@ -14,12 +14,14 @@ import {
   Download, 
   Upload, 
   CheckCircle2,
-  Eye
+  Eye,
+  Flame
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { AgeGroup, LanguageCode } from '../../types';
 import { MascotAvatar, MascotKey } from '../mascots/MascotAvatar';
 import { audio } from '../../utils/audio';
+import { DailyStreakRewardCalendar } from './DailyStreakRewardCalendar';
 
 export const ParentDashboard: React.FC = () => {
   const {
@@ -36,7 +38,7 @@ export const ParentDashboard: React.FC = () => {
     setLanguage
   } = useGame();
 
-  const [activeTab, setActiveTab] = useState<'profiles' | 'progress' | 'screentime' | 'audio' | 'sync' | 'safety'>('profiles');
+  const [activeTab, setActiveTab] = useState<'profiles' | 'streak' | 'progress' | 'screentime' | 'audio' | 'sync' | 'safety'>('streak');
   const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [newChildName, setNewChildName] = useState('');
   const [newChildAge, setNewChildAge] = useState<AgeGroup>('2-3');
@@ -134,6 +136,16 @@ export const ParentDashboard: React.FC = () => {
           >
             <User className="w-4 h-4" />
             <span>{t.parent.childrenProfiles}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('streak')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-colors shrink-0 ${
+              activeTab === 'streak' ? 'bg-amber-400 text-amber-950 shadow-xs' : 'hover:bg-amber-200/60'
+            }`}
+          >
+            <Flame className="w-4 h-4 text-orange-600" />
+            <span>Daily Streak & Calendar</span>
           </button>
 
           <button
@@ -318,45 +330,72 @@ export const ParentDashboard: React.FC = () => {
             </div>
           )}
 
+          {/* TAB: DAILY LEARNING STREAK & CALENDAR */}
+          {activeTab === 'streak' && (
+            <DailyStreakRewardCalendar />
+          )}
+
           {/* TAB 2: LEARNING PROGRESS */}
           {activeTab === 'progress' && (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-bold text-slate-800">
-                  {currentProfile.name}&apos;s Learning Journey
-                </h3>
-                <p className="text-xs text-slate-500">Track mastered skills, stars gathered, and saved artworks.</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">
+                    {currentProfile.name}&apos;s Learning Journey
+                  </h3>
+                  <p className="text-xs text-slate-500">Track mastered skills, stars gathered, and saved artworks.</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('streak')}
+                  className="flex items-center gap-1.5 text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-xl border border-orange-200 transition-colors"
+                >
+                  <Flame className="w-4 h-4 text-orange-500" />
+                  <span>View Reward Calendar →</span>
+                </button>
               </div>
 
               {/* Overview Metrics */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-2xl bg-white p-4 border border-amber-200 shadow-xs flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                    <Star className="w-6 h-6 fill-amber-400" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="rounded-2xl bg-white p-3.5 sm:p-4 border border-amber-200 shadow-xs flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                    <Star className="w-5 h-5 sm:w-6 sm:h-6 fill-amber-400" />
                   </div>
                   <div>
-                    <div className="text-2xl font-extrabold text-slate-800">{currentProfile.stars}</div>
-                    <div className="text-xs text-slate-500">{t.parent.starsCollected}</div>
+                    <div className="text-xl sm:text-2xl font-extrabold text-slate-800">{currentProfile.stars}</div>
+                    <div className="text-[11px] text-slate-500">{t.parent.starsCollected}</div>
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 border border-sky-200 shadow-xs flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
-                    <Clock className="w-6 h-6" />
+                <div 
+                  onClick={() => setActiveTab('streak')}
+                  className="rounded-2xl bg-white p-3.5 sm:p-4 border border-orange-200 shadow-xs flex items-center gap-2.5 sm:gap-3 cursor-pointer hover:border-orange-400 transition-colors"
+                >
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
+                    <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
                   </div>
                   <div>
-                    <div className="text-2xl font-extrabold text-slate-800">{minutesPlayed} min</div>
-                    <div className="text-xs text-slate-500">{t.parent.timeSpent}</div>
+                    <div className="text-xl sm:text-2xl font-extrabold text-slate-800">{currentProfile.currentStreak || 1} Days</div>
+                    <div className="text-[11px] text-orange-700 font-semibold">Active Streak 🔥</div>
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 border border-emerald-200 shadow-xs flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                    <Sparkles className="w-6 h-6" />
+                <div className="rounded-2xl bg-white p-3.5 sm:p-4 border border-sky-200 shadow-xs flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+                    <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <div className="text-2xl font-extrabold text-slate-800">{currentProfile.completedActivities.length}</div>
-                    <div className="text-xs text-slate-500">{t.parent.activitiesDone}</div>
+                    <div className="text-xl sm:text-2xl font-extrabold text-slate-800">{minutesPlayed} min</div>
+                    <div className="text-[11px] text-slate-500">{t.parent.timeSpent}</div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-white p-3.5 sm:p-4 border border-emerald-200 shadow-xs flex items-center gap-2.5 sm:gap-3">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                  <div>
+                    <div className="text-xl sm:text-2xl font-extrabold text-slate-800">{currentProfile.completedActivities.length}</div>
+                    <div className="text-[11px] text-slate-500">{t.parent.activitiesDone}</div>
                   </div>
                 </div>
               </div>

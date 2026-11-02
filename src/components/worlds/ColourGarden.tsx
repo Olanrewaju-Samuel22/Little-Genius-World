@@ -59,7 +59,11 @@ export const ColourGarden: React.FC = () => {
       const remainingTargetItems = itemsToBasket.filter(i => i.colorId === targetColor.id && !basketItems.includes(i.id) && i.id !== item.id);
       if (remainingTargetItems.length === 0) {
         playPositiveFeedback();
-        celebrate();
+        celebrate({
+          title: 'Colour Garden Master!',
+          subtitle: `Wonderful! You sorted all the ${targetColor.name} treasures!`,
+          stars: 2
+        });
       }
     } else {
       audio.playGentleTryAgain();

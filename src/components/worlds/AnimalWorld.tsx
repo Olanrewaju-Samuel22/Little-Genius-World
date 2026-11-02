@@ -71,8 +71,12 @@ export const AnimalWorld: React.FC = () => {
     if (choice.name === quizAnimal.name) {
       addStar(1);
       playPositiveFeedback();
-      celebrate();
-      setTimeout(nextQuiz, 1200);
+      celebrate({
+        title: 'Animal Sound Detective!',
+        subtitle: `Hooray! You identified the friendly ${choice.name}!`,
+        stars: 1
+      });
+      setTimeout(nextQuiz, 1400);
     } else {
       audio.playGentleTryAgain();
       audio.speak(t.tryAgain, currentLang);

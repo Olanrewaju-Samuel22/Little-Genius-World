@@ -27,7 +27,11 @@ export const EverydayHeroes: React.FC = () => {
     if (nextGerms.length === 0) {
       addStar(2);
       playPositiveFeedback();
-      celebrate();
+      celebrate({
+        title: 'Germ Buster Hero!',
+        subtitle: 'Sparkling clean hands! All germs washed away!',
+        stars: 2
+      });
     }
   };
 
@@ -62,7 +66,11 @@ export const EverydayHeroes: React.FC = () => {
         addStar(1);
         if (next.length === 4) {
           playPositiveFeedback();
-          celebrate();
+          celebrate({
+            title: 'Healthy Plate Champion!',
+            subtitle: 'Delicious! You built a colorful, nutritious meal!',
+            stars: 2
+          });
         }
       }
     } else {
@@ -88,7 +96,11 @@ export const EverydayHeroes: React.FC = () => {
       setTrafficPrompt('Green Light Means: GO & WALK SAFELY! 🟢');
       audio.speak("Green Light! Safe to cross with a grown-up!", currentLang);
       addStar(1);
-      celebrate();
+      celebrate({
+        title: 'Road Safety Champion!',
+        subtitle: 'Green light! Safe to walk across with a grown-up!',
+        stars: 1
+      });
     }
   };
 

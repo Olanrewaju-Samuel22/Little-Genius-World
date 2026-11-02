@@ -40,7 +40,11 @@ export const NumberKingdom: React.FC = () => {
       if (count === selectedNum) {
         addStar(1);
         playPositiveFeedback();
-        celebrate();
+        celebrate({
+          title: 'Counting Champion!',
+          subtitle: `Fantastic! You counted all ${selectedNum} stars!`,
+          stars: 1
+        });
       }
     }
   };
@@ -76,8 +80,12 @@ export const NumberKingdom: React.FC = () => {
     if (val === correct) {
       addStar(1);
       playPositiveFeedback();
-      celebrate();
-      setTimeout(generateNewMath, 1000);
+      celebrate({
+        title: 'Math Garden Master!',
+        subtitle: `Brilliant! ${mathA} ${mathOp} ${mathB} = ${correct}!`,
+        stars: 2
+      });
+      setTimeout(generateNewMath, 1200);
     } else {
       audio.playGentleTryAgain();
       audio.speak(t.tryAgain, currentLang);

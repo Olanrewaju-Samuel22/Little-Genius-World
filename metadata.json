@@ -2,5 +2,7 @@
   "name": "Little Genius World",
   "description": "Little Minds. Big Discoveries! A magical, age-adaptive educational gaming universe for children aged 0–5 years with interactive games, multilingual voice narration, stories, music, drawing, and parent controls.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

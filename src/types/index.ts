@@ -23,6 +23,10 @@ export interface ChildProfile {
   totalPlayTimeSeconds: number;
   createdAt: string;
   savedArtworks: string[]; // data URLs or artwork identifiers
+  currentStreak: number;
+  bestStreak: number;
+  lastActiveDate: string; // YYYY-MM-DD
+  activeDates: string[]; // dates on which child practiced
 }
 
 export interface ParentSettings {

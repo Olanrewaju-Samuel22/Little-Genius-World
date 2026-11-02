@@ -4,6 +4,19 @@ import { AgeGroup, ChildProfile, LanguageCode, ParentSettings, WorldId } from '.
 import { audio } from '../utils/audio';
 import { translations } from '../utils/translations';
 
+export interface CelebrationOptions {
+  title?: string;
+  subtitle?: string;
+  stars?: number;
+}
+
+export interface CelebrationState {
+  isActive: boolean;
+  title: string;
+  subtitle: string;
+  starsAwarded: number;
+}
+
 interface GameContextType {
   currentProfile: ChildProfile;
   profiles: ChildProfile[];
@@ -19,7 +32,9 @@ interface GameContextType {
   
   // Rewards & Encouragement
   addStar: (amount?: number) => void;
-  celebrate: () => void;
+  celebrate: (options?: CelebrationOptions | string) => void;
+  celebration: CelebrationState;
+  dismissCelebration: () => void;
   playPositiveFeedback: () => void;
   
   // Parent & Settings
@@ -53,7 +68,11 @@ const DEFAULT_PROFILE: ChildProfile = {
   completedActivities: ['abc-intro', 'count-stars', 'animal-peek'],
   totalPlayTimeSeconds: 420,
   createdAt: new Date().toISOString(),
-  savedArtworks: []
+  savedArtworks: [],
+  currentStreak: 4,
+  bestStreak: 6,
+  lastActiveDate: '2026-11-02',
+  activeDates: ['2026-10-30', '2026-10-31', '2026-11-01', '2026-11-02']
 };
 
 const DEFAULT_SETTINGS: ParentSettings = {
@@ -170,6 +189,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const createProfile = useCallback((name: string, ageGroup: AgeGroup, avatar: string) => {
+    const todayStr = '2026-11-02';
     const newProf: ChildProfile = {
       id: 'child-' + Date.now(),
       name: name.trim() || 'Little Star',
@@ -179,7 +199,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       completedActivities: [],
       totalPlayTimeSeconds: 0,
       createdAt: new Date().toISOString(),
-      savedArtworks: []
+      savedArtworks: [],
+      currentStreak: 1,
+      bestStreak: 1,
+      lastActiveDate: todayStr,
+      activeDates: [todayStr]
     };
     setProfiles(prev => [...prev, newProf]);
     setCurrentProfileId(newProf.id);
@@ -207,25 +231,75 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSettings(prev => ({ ...prev, ...newSettings }));
   }, []);
 
+  // Celebration state for Framer Motion Confetti Explosion
+  const [celebration, setCelebration] = useState<CelebrationState>({
+    isActive: false,
+    title: 'Level Complete!',
+    subtitle: 'Little Minds. Big Discoveries!',
+    starsAwarded: 1,
+  });
+
+  const dismissCelebration = useCallback(() => {
+    setCelebration(prev => ({ ...prev, isActive: false }));
+  }, []);
+
   const addStar = useCallback((amount = 1) => {
+    const todayStr = '2026-11-02';
     setProfiles(prev =>
-      prev.map(p => (p.id === currentProfile.id ? { ...p, stars: p.stars + amount } : p))
+      prev.map(p => {
+        if (p.id !== currentProfile.id) return p;
+        const currentDates = p.activeDates || [];
+        const hasToday = currentDates.includes(todayStr);
+        const updatedDates = hasToday ? currentDates : [...currentDates, todayStr].sort();
+        const newStreak = hasToday ? (p.currentStreak || 1) : (p.currentStreak || 0) + 1;
+        return {
+          ...p,
+          stars: p.stars + amount,
+          activeDates: updatedDates,
+          currentStreak: newStreak,
+          bestStreak: Math.max(p.bestStreak || 0, newStreak),
+          lastActiveDate: todayStr
+        };
+      })
     );
     audio.playStarDing();
   }, [currentProfile.id]);
 
-  const celebrate = useCallback(() => {
-    audio.playSuccess();
+  const celebrate = useCallback((opts?: CelebrationOptions | string) => {
+    // Play celebratory sound fanfare
+    audio.playCelebrationFanfare();
+
+    let title = 'Level Complete!';
+    let subtitle = 'Little Minds. Big Discoveries!';
+    let stars = 1;
+
+    if (typeof opts === 'string') {
+      title = opts;
+    } else if (opts) {
+      if (opts.title) title = opts.title;
+      if (opts.subtitle) subtitle = opts.subtitle;
+      if (opts.stars) stars = opts.stars;
+    }
+
+    // Trigger Framer Motion confetti overlay
+    setCelebration({
+      isActive: true,
+      title,
+      subtitle,
+      starsAwarded: stars,
+    });
+
+    // Companion particle trigger
     try {
       confetti({
-        particleCount: 50,
-        spread: 70,
+        particleCount: 45,
+        spread: 80,
         origin: { y: 0.6 },
         colors: ['#F59E0B', '#38BDF8', '#10B981', '#EC4899', '#8B5CF6'],
         disableForReducedMotion: settings.reducedMotion
       });
     } catch {
-      // confetti fallback
+      // fallback
     }
   }, [settings.reducedMotion]);
 
@@ -262,6 +336,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCurrentWorld,
         addStar,
         celebrate,
+        celebration,
+        dismissCelebration,
         playPositiveFeedback,
         settings,
         updateSettings,

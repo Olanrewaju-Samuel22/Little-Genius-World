@@ -101,36 +101,84 @@ class AudioEngine {
   }
 
   public playSuccess() {
+    this.playCelebrationFanfare();
+  }
+
+  public playCelebrationFanfare() {
     if (this.isMuted) return;
     this.initContext();
     if (!this.ctx || !this.sfxGainNode) return;
 
-    // Happy fanfare: G4 -> C5 -> E5 -> G5 (held)
-    const melody = [
-      { f: 392.0, d: 0.12, t: 0 },
-      { f: 523.25, d: 0.12, t: 0.12 },
-      { f: 659.25, d: 0.14, t: 0.24 },
-      { f: 783.99, d: 0.45, t: 0.38 },
-      { f: 1046.5, d: 0.55, t: 0.42 }, // Octave sparkle
-    ];
+    const now = this.ctx.currentTime;
 
-    melody.forEach((item) => {
+    // 1. Dual Confetti "POP!" sounds
+    [0, 0.09].forEach((offset, idx) => {
       if (!this.ctx || !this.sfxGainNode) return;
-      const now = this.ctx.currentTime + item.t;
+      const t = now + offset;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(item.f, now);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320 + idx * 80, t);
+      osc.frequency.exponentialRampToValueAtTime(800 + idx * 120, t + 0.08);
 
-      gain.gain.setValueAtTime(0.4, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + item.d);
+      gain.gain.setValueAtTime(0.55, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
 
       osc.connect(gain);
       gain.connect(this.sfxGainNode);
 
-      osc.start(now);
-      osc.stop(now + item.d + 0.05);
+      osc.start(t);
+      osc.stop(t + 0.11);
+    });
+
+    // 2. Triumphant Brass/Chime Melody: G4 -> C5 -> E5 -> G5 -> C6
+    const melody = [
+      { f: 392.00, d: 0.14, t: 0.08 }, // G4
+      { f: 523.25, d: 0.14, t: 0.20 }, // C5
+      { f: 659.25, d: 0.16, t: 0.32 }, // E5
+      { f: 783.99, d: 0.35, t: 0.46 }, // G5
+      { f: 1046.50, d: 0.65, t: 0.60 }, // High C6 (sparkling sustain)
+    ];
+
+    melody.forEach((item) => {
+      if (!this.ctx || !this.sfxGainNode) return;
+      const t = now + item.t;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(item.f, t);
+
+      gain.gain.setValueAtTime(0.45, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + item.d);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+
+      osc.start(t);
+      osc.stop(t + item.d + 0.05);
+    });
+
+    // 3. Shimmering Star Sparkles & Chimes
+    const sparkles = [1318.51, 1567.98, 2093.00, 2637.02];
+    sparkles.forEach((freq, idx) => {
+      if (!this.ctx || !this.sfxGainNode) return;
+      const t = now + 0.65 + idx * 0.08;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.25, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+
+      osc.start(t);
+      osc.stop(t + 0.4);
     });
   }
 

@@ -235,7 +235,11 @@ export const CreativeCorner: React.FC = () => {
     link.click();
 
     addStar(2);
-    celebrate();
+    celebrate({
+      title: 'Art Masterpiece Created!',
+      subtitle: 'Downloaded and saved to your child gallery!',
+      stars: 2
+    });
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2500);
   };

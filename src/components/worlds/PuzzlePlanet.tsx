@@ -58,7 +58,11 @@ export const PuzzlePlanet: React.FC = () => {
 
           if (nextMatched.length === pairCount) {
             playPositiveFeedback();
-            celebrate();
+            celebrate({
+              title: 'Memory Planet Master!',
+              subtitle: `Super brain power! All ${pairCount} matching pairs found!`,
+              stars: 3
+            });
           }
         }, 500);
       } else {
@@ -86,10 +90,14 @@ export const PuzzlePlanet: React.FC = () => {
     if (choice === currentPattern.answer) {
       addStar(1);
       playPositiveFeedback();
-      celebrate();
+      celebrate({
+        title: 'Pattern Detective Master!',
+        subtitle: 'Great thinking! You found the next pattern item!',
+        stars: 2
+      });
       setTimeout(() => {
         setPatternIdx((patternIdx + 1) % PATTERNS.length);
-      }, 1000);
+      }, 1200);
     } else {
       audio.playGentleTryAgain();
     }

@@ -17,6 +17,7 @@ import { ScreenTimeLockModal } from './components/parent/ScreenTimeLockModal';
 import { AgeSelectModal } from './components/modals/AgeSelectModal';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
+import { ConfettiExplosion } from './components/effects/ConfettiExplosion';
 
 function MainApp() {
   const {
@@ -26,7 +27,9 @@ function MainApp() {
     setIsParentGateOpen,
     setIsParentDashboardOpen,
     isSettingsModalOpen,
-    setIsSettingsModalOpen
+    setIsSettingsModalOpen,
+    celebration,
+    dismissCelebration
   } = useGame();
 
   const [isInWorldMap, setIsInWorldMap] = useState(false);
@@ -114,6 +117,15 @@ function MainApp() {
 
       {/* Offline Status Badge */}
       <OfflineIndicator />
+
+      {/* Framer Motion Confetti Explosion & Celebration Sound */}
+      <ConfettiExplosion
+        isActive={celebration.isActive}
+        onDismiss={dismissCelebration}
+        title={celebration.title}
+        subtitle={celebration.subtitle}
+        starsAwarded={celebration.starsAwarded}
+      />
     </div>
   );
 }

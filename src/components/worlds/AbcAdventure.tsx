@@ -72,7 +72,11 @@ export const AbcAdventure: React.FC = () => {
       const newStreak = streak + 1;
       setStreak(newStreak);
       if (newStreak % 3 === 0) {
-        celebrate();
+        celebrate({
+          title: 'ABC Explorer Champion!',
+          subtitle: `Incredible! Streak of ${newStreak} letters found!`,
+          stars: 2
+        });
       }
       setTimeout(() => {
         handleNextQuiz();

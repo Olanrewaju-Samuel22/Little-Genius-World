@@ -65,7 +65,11 @@ export const MusicVillage: React.FC = () => {
         audio.playNote(freq, 0.4);
         if (i === song.notes.length - 1) {
           setIsPlayingSong(false);
-          celebrate();
+          celebrate({
+            title: 'Music Village Maestro!',
+            subtitle: `Encore! You sang along to "${selectedSong.title}"!`,
+            stars: 2
+          });
         }
       }, i * 380);
     });

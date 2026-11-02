@@ -125,7 +125,11 @@ export const StoryCastle: React.FC = () => {
     } else {
       // Completed book!
       addStar(3);
-      celebrate();
+      celebrate({
+        title: 'Story Explorer Champion!',
+        subtitle: `You completed "${selectedStory.title}"!`,
+        stars: 3
+      });
     }
   };
 
