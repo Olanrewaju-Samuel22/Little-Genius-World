@@ -18,6 +18,8 @@ import { AgeSelectModal } from './components/modals/AgeSelectModal';
 import { SettingsModal } from './components/modals/SettingsModal';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
 import { ConfettiExplosion } from './components/effects/ConfettiExplosion';
+import { usePWAUpdate } from './utils/usePWAUpdate';
+import { UpdateNotificationModal } from './components/pwa/UpdateNotificationModal';
 
 function MainApp() {
   const {
@@ -34,6 +36,15 @@ function MainApp() {
 
   const [isInWorldMap, setIsInWorldMap] = useState(false);
   const [isAgeModalOpen, setIsAgeModalOpen] = useState(false);
+
+  // Automatic PWA Update detection & lifecycle
+  const {
+    needRefresh,
+    isUpdating,
+    updateError,
+    updateApp,
+    dismissUpdate
+  } = usePWAUpdate();
 
   // Router for current game world
   const renderCurrentView = () => {
@@ -117,6 +128,15 @@ function MainApp() {
 
       {/* Offline Status Badge */}
       <OfflineIndicator />
+
+      {/* Automatic Application Update Notification Modal */}
+      <UpdateNotificationModal
+        isOpen={needRefresh}
+        isUpdating={isUpdating}
+        updateError={updateError}
+        onUpdate={updateApp}
+        onLater={dismissUpdate}
+      />
 
       {/* Framer Motion Confetti Explosion & Celebration Sound */}
       <ConfettiExplosion

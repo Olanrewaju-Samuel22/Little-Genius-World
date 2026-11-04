@@ -15,13 +15,16 @@ import {
   Upload, 
   CheckCircle2,
   Eye,
-  Flame
+  Flame,
+  RefreshCw
 } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { AgeGroup, LanguageCode } from '../../types';
 import { MascotAvatar, MascotKey } from '../mascots/MascotAvatar';
 import { audio } from '../../utils/audio';
 import { DailyStreakRewardCalendar } from './DailyStreakRewardCalendar';
+import { APP_VERSION, BUILD_ID } from '../../utils/version';
+import { usePWAUpdate } from '../../utils/usePWAUpdate';
 
 export const ParentDashboard: React.FC = () => {
   const {
@@ -48,6 +51,9 @@ export const ParentDashboard: React.FC = () => {
   const [supabaseUrl, setSupabaseUrl] = useState(settings.supabaseUrl || '');
   const [supabaseAnonKey, setSupabaseAnonKey] = useState(settings.supabaseAnonKey || '');
   const [syncStatus, setSyncStatus] = useState<string>('Local Offline Storage Active (Synchronized)');
+
+  // PWA Automatic Update controls
+  const { checkForUpdates, isChecking: isCheckingUpdate } = usePWAUpdate();
 
   if (!isParentDashboardOpen) return null;
 
@@ -689,14 +695,32 @@ export const ParentDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Bottom Actions */}
-        <div className="px-6 py-3 bg-white border-t border-slate-200 flex justify-end">
-          <button
-            onClick={() => setIsParentDashboardOpen(false)}
-            className="rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-6 py-2.5 text-sm shadow-md transition-transform active:scale-95"
-          >
-            {t.parent.close}
-          </button>
+        {/* Bottom Actions & Version Indicator */}
+        <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-bold">
+            <span className="font-black text-slate-800">LITTLE GENIUS WORLD</span>
+            <span>•</span>
+            <span className="text-slate-700">Version {APP_VERSION}</span>
+            <span className="hidden md:inline text-slate-400">• Build {BUILD_ID}</span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => checkForUpdates(true)}
+              disabled={isCheckingUpdate}
+              className="px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 text-slate-700 hover:text-emerald-900 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isCheckingUpdate ? 'animate-spin' : ''}`} />
+              <span>{isCheckingUpdate ? 'Checking...' : 'Check for Updates'}</span>
+            </button>
+
+            <button
+              onClick={() => setIsParentDashboardOpen(false)}
+              className="rounded-2xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-6 py-2 text-sm shadow-md transition-transform active:scale-95"
+            >
+              {t.parent.close}
+            </button>
+          </div>
         </div>
       </div>
     </div>

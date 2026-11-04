@@ -3,6 +3,7 @@ import { X, Volume2, VolumeX, Music, Globe, Eye } from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { LanguageCode } from '../../types';
 import { audio } from '../../utils/audio';
+import { APP_VERSION, BUILD_ID } from '../../utils/version';
 
 interface Props {
   isOpen: boolean;
@@ -130,6 +131,14 @@ export const SettingsModal: React.FC<Props> = ({ isOpen, onClose }) => {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Application Version & Update Check */}
+          <div className="pt-3 border-t border-slate-100 flex flex-col items-center justify-center text-center">
+            <span className="text-xs font-black text-slate-700">LITTLE GENIUS WORLD</span>
+            <span className="text-[11px] font-bold text-slate-500">
+              Version {APP_VERSION} (Build {BUILD_ID})
+            </span>
           </div>
         </div>
       </div>

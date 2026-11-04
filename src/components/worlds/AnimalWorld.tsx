@@ -1,231 +1,272 @@
-import React, { useState } from 'react';
-import { Volume2, Sparkles, RefreshCw, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Sparkles, 
+  RotateCcw, 
+  Star, 
+  ArrowRight,
+  Compass,
+  Trophy
+} from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { WorldHeader } from './WorldHeader';
 import { audio } from '../../utils/audio';
 
-interface AnimalItem {
-  name: string;
-  emoji: string;
-  soundKey: string;
-  category: 'farm' | 'wild' | 'sea' | 'birds';
-  habitat: string;
-  soundPrompt: string;
-  yo: string;
-  ha: string;
-  ig: string;
+import { AnimalExplorer } from './animals/AnimalExplorer';
+import { GuessSoundGame } from './animals/GuessSoundGame';
+import { MatchNameGame } from './animals/MatchNameGame';
+import { AnimalHomesGame } from './animals/AnimalHomesGame';
+import { WhoAmIGame } from './animals/WhoAmIGame';
+import { AnimalFamiliesGame } from './animals/AnimalFamiliesGame';
+import { AnimalSoundsChallenge } from './animals/AnimalSoundsChallenge';
+import { ANIMALS_DATA } from './animals/animalsData';
+
+type AnimalTab = 'explorer' | 'guess' | 'match' | 'homes' | 'whoami' | 'families' | 'sounds';
+
+interface TabConfig {
+  id: AnimalTab;
+  title: string;
+  icon: string;
+  recommendedFor: string[];
 }
 
-const ANIMALS: AnimalItem[] = [
-  // Farm
-  { name: 'Cow', emoji: '🐮', soundKey: 'cow', category: 'farm', habitat: 'Barn', soundPrompt: 'Moo Moo', yo: 'Malu', ha: 'Saniya', ig: 'Ehi' },
-  { name: 'Duck', emoji: '🦆', soundKey: 'duck', category: 'farm', habitat: 'Pond', soundPrompt: 'Quack Quack', yo: 'Pẹpẹyẹ', ha: 'Agwagwa', ig: 'Ọbọgwụ' },
-  { name: 'Dog', emoji: '🐶', soundKey: 'dog', category: 'farm', habitat: 'Yard', soundPrompt: 'Woof Woof', yo: 'Ajá', ha: 'Kare', ig: 'Nkịta' },
-  { name: 'Cat', emoji: '🐱', soundKey: 'cat', category: 'farm', habitat: 'Home', soundPrompt: 'Meow Meow', yo: 'Ológbò', ha: 'Kyanwa', ig: 'Nwamba' },
-  
-  // Wild
-  { name: 'Lion', emoji: '🦁', soundKey: 'lion', category: 'wild', habitat: 'Savanna', soundPrompt: 'Roaaar!', yo: 'Kìnìún', ha: 'Zaki', ig: 'Ọdụm' },
-  { name: 'Frog', emoji: '🐸', soundKey: 'frog', category: 'wild', habitat: 'Swamp', soundPrompt: 'Ribbit Ribbit', yo: 'Ọ̀pọ̀lọ́', ha: 'Kwado', ig: 'Awọ' },
-  { name: 'Elephant', emoji: '🐘', soundKey: 'elephant', category: 'wild', habitat: 'Jungle', soundPrompt: 'Pawoo!', yo: 'Erin', ha: 'Giwa', ig: 'Enyí' },
-  { name: 'Monkey', emoji: '🐒', soundKey: 'monkey', category: 'wild', habitat: 'Trees', soundPrompt: 'Ooh ooh aah!', yo: 'Ọ̀bọ', ha: 'Biri', ig: 'Enwe' },
-
-  // Sea
-  { name: 'Whale', emoji: '🐳', soundKey: 'whale', category: 'sea', habitat: 'Deep Ocean', soundPrompt: 'Splash!', yo: 'Ẹja Àbùkè', ha: 'Kifin Kunkuru', ig: 'Nnukwu azụ' },
-  { name: 'Dolphin', emoji: '🐬', soundKey: 'dolphin', category: 'sea', habitat: 'Coral Reef', soundPrompt: 'Click whistle!', yo: 'Ẹja Dọ́fínì', ha: 'Kifin Dolphin', ig: 'Azụ Dọlfin' },
-  { name: 'Crab', emoji: '🦀', soundKey: 'crab', category: 'sea', habitat: 'Beach', soundPrompt: 'Snap snap!', yo: 'Akàn', ha: 'Kaguwa', ig: 'Nshịkọ' },
-
-  // Birds
-  { name: 'Little Bird', emoji: '🐦', soundKey: 'bird', category: 'birds', habitat: 'Sky', soundPrompt: 'Tweet Tweet', yo: 'Ẹyẹ', ha: 'Tsuntsu', ig: 'Nnụnụ' },
-  { name: 'Owl', emoji: '🦉', soundKey: 'owl', category: 'birds', habitat: 'Tall Oak Tree', soundPrompt: 'Hoo Hoo!', yo: 'Òwìwí', ha: 'Mujiya', ig: 'Ikwikwi' },
-  { name: 'Penguin', emoji: '🐧', soundKey: 'penguin', category: 'birds', habitat: 'Snow & Ice', soundPrompt: 'Waddle chirp!', yo: 'Pẹ́ngúìnì', ha: 'Penguin', ig: 'Penguịn' },
+const TABS: TabConfig[] = [
+  { id: 'explorer', title: 'Animal Safari', icon: '🐾', recommendedFor: ['0-1', '1-2', '2-3', '3-4', '4-5'] },
+  { id: 'guess', title: 'Guess Sound', icon: '🔊', recommendedFor: ['0-1', '1-2', '2-3'] },
+  { id: 'match', title: 'Match Name', icon: '🏷️', recommendedFor: ['1-2', '2-3', '3-4'] },
+  { id: 'homes', title: 'Animal Homes', icon: '🏡', recommendedFor: ['2-3', '3-4', '4-5'] },
+  { id: 'whoami', title: 'Who Am I?', icon: '❓', recommendedFor: ['3-4', '4-5'] },
+  { id: 'families', title: 'Animal Families', icon: '🐣', recommendedFor: ['3-4', '4-5'] },
+  { id: 'sounds', title: 'Sound Challenge', icon: '🎵', recommendedFor: ['2-3', '3-4', '4-5'] },
 ];
 
 export const AnimalWorld: React.FC = () => {
-  const { addStar, celebrate, playPositiveFeedback, currentLang, t } = useGame();
-  const [activeCategory, setActiveCategory] = useState<'all' | 'farm' | 'wild' | 'sea' | 'birds'>('all');
-  const [activeTab, setActiveTab] = useState<'safari' | 'quiz'>('safari');
+  const { currentProfile, addStar, celebrate, playPositiveFeedback, currentLang, t } = useGame();
 
-  // Quiz state
-  const [quizAnimal, setQuizAnimal] = useState(() => ANIMALS[0]);
-  const [quizChoices, setQuizChoices] = useState<AnimalItem[]>(() => {
-    return [ANIMALS[0], ANIMALS[1], ANIMALS[4]].sort(() => 0.5 - Math.random());
+  // Pick initial tab based on child's age group
+  const getInitialTab = (): AnimalTab => {
+    if (currentProfile.ageGroup === '4-5') return 'whoami';
+    if (currentProfile.ageGroup === '3-4') return 'homes';
+    if (currentProfile.ageGroup === '2-3') return 'match';
+    if (currentProfile.ageGroup === '1-2') return 'guess';
+    return 'explorer';
+  };
+
+  const [activeTab, setActiveTab] = useState<AnimalTab>(getInitialTab);
+  const [streak, setStreak] = useState<number>(0);
+  const [sessionStars, setSessionStars] = useState<number>(0);
+
+  // Track discovered animals for milestones
+  const [discoveredAnimals, setDiscoveredAnimals] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(`lgw_discovered_animals_${currentProfile.id}`);
+      return saved ? JSON.parse(saved) : ['cow', 'lion', 'dolphin', 'parrot'];
+    } catch {
+      return ['cow', 'lion', 'dolphin', 'parrot'];
+    }
   });
 
-  const nextQuiz = () => {
-    const target = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-    const others = ANIMALS.filter(a => a.name !== target.name).sort(() => 0.5 - Math.random()).slice(0, 2);
-    setQuizAnimal(target);
-    setQuizChoices([target, ...others].sort(() => 0.5 - Math.random()));
-    audio.playAnimalSound(target.soundKey);
-  };
+  const handleDiscoveredAnimal = (animalId: string) => {
+    if (!discoveredAnimals.includes(animalId)) {
+      const updated = [...discoveredAnimals, animalId];
+      setDiscoveredAnimals(updated);
+      try {
+        localStorage.setItem(`lgw_discovered_animals_${currentProfile.id}`, JSON.stringify(updated));
+      } catch {
+        // fallback
+      }
 
-  const handleAnimalTap = (animal: AnimalItem) => {
-    audio.playAnimalSound(animal.soundKey);
-    const langName = currentLang === 'yo' ? animal.yo : currentLang === 'ha' ? animal.ha : currentLang === 'ig' ? animal.ig : animal.name;
-    setTimeout(() => {
-      audio.speak(`${langName}! ${animal.soundPrompt}`, currentLang);
-    }, 400);
-  };
-
-  const handleQuizAnswer = (choice: AnimalItem) => {
-    if (choice.name === quizAnimal.name) {
-      addStar(1);
-      playPositiveFeedback();
-      celebrate({
-        title: 'Animal Sound Detective!',
-        subtitle: `Hooray! You identified the friendly ${choice.name}!`,
-        stars: 1
-      });
-      setTimeout(nextQuiz, 1400);
-    } else {
-      audio.playGentleTryAgain();
-      audio.speak(t.tryAgain, currentLang);
+      // Check milestones
+      if (updated.length === 5) {
+        addStar(1);
+        celebrate({
+          title: '5 Animals Discovered!',
+          subtitle: 'You are an Official Animal Safari Explorer!',
+          stars: 1,
+        });
+      } else if (updated.length === 15) {
+        addStar(2);
+        celebrate({
+          title: '15 Animal Friends Discovered!',
+          subtitle: 'Incredible! You know creatures of the Farm, Jungle, and Sea!',
+          stars: 2,
+        });
+      } else if (updated.length === ANIMALS_DATA.length) {
+        addStar(3);
+        celebrate({
+          title: 'Animal Kingdom Champion!',
+          subtitle: 'All 32 magnificent animals discovered across the world!',
+          stars: 3,
+        });
+      }
     }
   };
 
-  const filteredAnimals = activeCategory === 'all'
-    ? ANIMALS
-    : ANIMALS.filter(a => a.category === activeCategory);
+  const handleCorrectAnswer = () => {
+    addStar(1);
+    setSessionStars((prev) => prev + 1);
+    playPositiveFeedback();
+
+    const newStreak = streak + 1;
+    setStreak(newStreak);
+
+    // Milestone streak celebrations (3, 6, 9...)
+    if (newStreak > 0 && newStreak % 3 === 0) {
+      celebrate({
+        title: 'Animal Expert Streak!',
+        subtitle: `Fantastic! ${newStreak} animal challenges in a row!`,
+        stars: 2,
+      });
+    }
+  };
+
+  const handleNextActivity = () => {
+    const currentIndex = TABS.findIndex((t) => t.id === activeTab);
+    const nextIndex = (currentIndex + 1) % TABS.length;
+    setActiveTab(TABS[nextIndex].id);
+    audio.playPop(1.1);
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-b from-emerald-50 via-teal-50 to-sky-50 flex flex-col">
+      {/* World Navigation Header */}
       <WorldHeader
         title={t.worlds['animal-world'].title}
-        instructionText="Tap friendly animals to hear their real sounds and guess who makes each sound!"
-        accentColor="bg-emerald-400"
+        instructionText="Welcome to Animal World! Meet 32 friendly animals, hear real sounds, and explore their homes!"
+        accentColor="bg-emerald-500"
       />
 
-      {/* Tabs */}
-      <div className="flex justify-center gap-2 p-3 bg-white/70 backdrop-blur-xs border-b border-emerald-200">
-        <button
-          onClick={() => { setActiveTab('safari'); audio.playPop(); }}
-          className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
-            activeTab === 'safari'
-              ? 'bg-emerald-600 text-white shadow-md scale-105'
-              : 'bg-white text-emerald-900 hover:bg-emerald-50'
-          }`}
-        >
-          🐾 Animal Safari
-        </button>
+      {/* Interactive Activity Mode Switcher Tabs */}
+      <div className="bg-white/90 backdrop-blur-xs border-b-2 border-emerald-200 shadow-xs px-2 sm:px-4 py-2 sticky top-[57px] z-20">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const isRecommended = tab.recommendedFor.includes(currentProfile.ageGroup);
 
-        <button
-          onClick={() => {
-            setActiveTab('quiz');
-            audio.playPop();
-            nextQuiz();
-          }}
-          className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
-            activeTab === 'quiz'
-              ? 'bg-emerald-600 text-white shadow-md scale-105'
-              : 'bg-white text-emerald-900 hover:bg-emerald-50'
-          }`}
-        >
-          🔊 Sound Detective
-        </button>
-      </div>
-
-      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col">
-        {/* MODE 1: SAFARI EXPLORER */}
-        {activeTab === 'safari' && (
-          <div className="space-y-4">
-            {/* Category Filter Pills */}
-            <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2">
-              {[
-                { id: 'all', label: 'All Friends' },
-                { id: 'farm', label: '🚜 Farm' },
-                { id: 'wild', label: '🌴 Wild Jungle' },
-                { id: 'sea', label: '🌊 Sea Ocean' },
-                { id: 'birds', label: '🪶 Birds' },
-              ].map((c) => (
+              return (
                 <button
-                  key={c.id}
-                  onClick={() => { setActiveCategory(c.id as typeof activeCategory); audio.playPop(1.1); }}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                    activeCategory === c.id
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'bg-white text-emerald-900 hover:bg-emerald-100 border border-emerald-200'
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    audio.playPop(1.05);
+                  }}
+                  className={`px-3 py-2 sm:px-4 sm:py-2 rounded-2xl text-xs sm:text-sm font-black whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-300 scale-105'
+                      : 'bg-white hover:bg-emerald-50 text-slate-700 border border-emerald-200'
                   }`}
                 >
-                  {c.label}
+                  <span className="text-base">{tab.icon}</span>
+                  <span>{tab.title}</span>
+                  {isRecommended && !isActive && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" title="Recommended for your age" />
+                  )}
                 </button>
-              ))}
-            </div>
-
-            {/* Animal Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {filteredAnimals.map((animal) => {
-                const langName = currentLang === 'yo' ? animal.yo : currentLang === 'ha' ? animal.ha : currentLang === 'ig' ? animal.ig : animal.name;
-                return (
-                  <button
-                    key={animal.name}
-                    onClick={() => handleAnimalTap(animal)}
-                    className="group bg-white rounded-3xl p-5 shadow-md border-3 border-emerald-200 hover:border-emerald-400 flex flex-col items-center text-center transition-all transform active:scale-95 hover:-translate-y-1"
-                  >
-                    <div className="text-6xl my-2 group-hover:scale-110 transition-transform">
-                      {animal.emoji}
-                    </div>
-                    <div className="text-base font-black text-slate-800">{langName}</div>
-                    <div className="text-xs text-emerald-600 font-bold">{animal.soundPrompt}</div>
-                    <div className="mt-2 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                      {animal.habitat}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+              );
+            })}
           </div>
+
+          {/* Quick Next Activity Button */}
+          <div className="hidden sm:flex items-center gap-2 shrink-0 pl-2 border-l border-emerald-200">
+            <button
+              onClick={handleNextActivity}
+              className="px-3 py-1.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-xs font-black flex items-center gap-1 transition-transform active:scale-95"
+            >
+              <span>Next Game</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Educational Arena */}
+      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col items-center">
+        {activeTab === 'explorer' && (
+          <AnimalExplorer
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onDiscoveredAnimal={handleDiscoveredAnimal}
+            onCorrectAnswer={handleCorrectAnswer}
+            discoveredList={discoveredAnimals}
+          />
         )}
 
-        {/* MODE 2: SOUND DETECTIVE QUIZ */}
-        {activeTab === 'quiz' && (
-          <div className="flex-1 flex flex-col items-center justify-center max-w-lg mx-auto w-full text-center">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-emerald-300 w-full animate-pop">
-              <h2 className="text-xl font-black text-slate-800 mb-2">
-                Who makes this sound?
-              </h2>
+        {activeTab === 'guess' && (
+          <GuessSoundGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              <p className="text-xs text-slate-500 mb-4">
-                Listen carefully and tap the animal friend!
-              </p>
+        {activeTab === 'match' && (
+          <MatchNameGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              {/* Sound Button */}
-              <button
-                onClick={() => {
-                  audio.playAnimalSound(quizAnimal.soundKey);
-                }}
-                className="my-3 inline-flex items-center gap-3 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-3.5 text-lg shadow-md transition-transform active:scale-95 animate-bounce-gentle"
-              >
-                <Volume2 className="w-6 h-6" />
-                <span>Play Sound Again</span>
-              </button>
+        {activeTab === 'homes' && (
+          <AnimalHomesGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              <div className="grid grid-cols-3 gap-3 mt-6">
-                {quizChoices.map((choice) => {
-                  const langName = currentLang === 'yo' ? choice.yo : currentLang === 'ha' ? choice.ha : currentLang === 'ig' ? choice.ig : choice.name;
-                  return (
-                    <button
-                      key={choice.name}
-                      onClick={() => handleQuizAnswer(choice)}
-                      className="aspect-square rounded-2xl bg-emerald-50 hover:bg-emerald-100 border-3 border-emerald-200 hover:border-emerald-400 shadow-sm flex flex-col items-center justify-center p-2 transition-transform active:scale-95"
-                    >
-                      <span className="text-5xl">{choice.emoji}</span>
-                      <span className="text-xs font-bold text-slate-800 mt-1">{langName}</span>
-                    </button>
-                  );
-                })}
-              </div>
+        {activeTab === 'whoami' && (
+          <WhoAmIGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              <button
-                onClick={nextQuiz}
-                className="mt-6 inline-flex items-center gap-2 text-xs text-emerald-700 font-bold hover:underline"
-              >
-                <RefreshCw className="w-4 h-4" />
-                <span>Next Animal</span>
-              </button>
-            </div>
-          </div>
+        {activeTab === 'families' && (
+          <AnimalFamiliesGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
+
+        {activeTab === 'sounds' && (
+          <AnimalSoundsChallenge
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
         )}
       </main>
+
+      {/* Footer Progress & Status Bar */}
+      <footer className="w-full bg-white/80 border-t border-emerald-200 py-3 px-4 text-center">
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm font-bold text-emerald-950">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 bg-emerald-100 rounded-lg text-emerald-700">🐾</span>
+            <span>Animals Discovered: <strong className="text-emerald-700">{discoveredAnimals.length}</strong> / {ANIMALS_DATA.length}</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span>Session Stars: <strong className="text-emerald-700">{sessionStars}</strong></span>
+            </div>
+            {streak > 0 && (
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white font-black">
+                🔥 Streak {streak}
+              </span>
+            )}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

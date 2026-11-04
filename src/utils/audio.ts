@@ -364,21 +364,103 @@ class AudioEngine {
     const now = this.ctx.currentTime;
     const lower = animal.toLowerCase();
 
-    if (lower.includes('cow') || lower === 'cow') {
-      // Moo: Low warm slide down
+    if (lower.includes('cow')) {
+      // Moo: Low warm resonant slide
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(140, now);
-      osc.frequency.linearRampToValueAtTime(160, now + 0.2);
-      osc.frequency.exponentialRampToValueAtTime(110, now + 0.8);
-      gain.gain.setValueAtTime(0.3, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.85);
+      osc.frequency.setValueAtTime(135, now);
+      osc.frequency.linearRampToValueAtTime(155, now + 0.22);
+      osc.frequency.exponentialRampToValueAtTime(105, now + 0.85);
+      gain.gain.setValueAtTime(0.32, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.9);
       osc.connect(gain);
       gain.connect(this.sfxGainNode);
       osc.start(now);
-      osc.stop(now + 0.9);
-    } else if (lower.includes('cat') || lower === 'cat') {
+      osc.stop(now + 0.92);
+    } else if (lower.includes('sheep')) {
+      // Baa Baa: Gentle vibrato bleat
+      [0, 0.35].forEach((offset) => {
+        if (!this.ctx || !this.sfxGainNode) return;
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, t);
+        osc.frequency.linearRampToValueAtTime(290, t + 0.1);
+        osc.frequency.exponentialRampToValueAtTime(220, t + 0.28);
+        gain.gain.setValueAtTime(0.28, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        osc.connect(gain);
+        gain.connect(this.sfxGainNode);
+        osc.start(t);
+        osc.stop(t + 0.32);
+      });
+    } else if (lower.includes('goat')) {
+      // Maa-aa: Quivering reedy bleat
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.linearRampToValueAtTime(360, now + 0.15);
+      osc.frequency.exponentialRampToValueAtTime(270, now + 0.5);
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.52);
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+      osc.start(now);
+      osc.stop(now + 0.55);
+    } else if (lower.includes('horse') || lower.includes('zebra')) {
+      // Whinny: Ascending vibrato slide then drop
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(450, now);
+      osc.frequency.exponentialRampToValueAtTime(900, now + 0.25);
+      osc.frequency.exponentialRampToValueAtTime(500, now + 0.65);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+      osc.start(now);
+      osc.stop(now + 0.72);
+    } else if (lower.includes('pig')) {
+      // Oink Oink: Two low snort grunts
+      [0, 0.22].forEach((offset) => {
+        if (!this.ctx || !this.sfxGainNode) return;
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.exponentialRampToValueAtTime(80, t + 0.14);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.16);
+        osc.connect(gain);
+        gain.connect(this.sfxGainNode);
+        osc.start(t);
+        osc.stop(t + 0.18);
+      });
+    } else if (lower.includes('chicken')) {
+      // Cluck Cluck: Staccato resonant chirps
+      [0, 0.12, 0.28].forEach((offset, idx) => {
+        if (!this.ctx || !this.sfxGainNode) return;
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        const base = idx === 2 ? 440 : 380;
+        osc.frequency.setValueAtTime(base, t);
+        osc.frequency.exponentialRampToValueAtTime(base + 120, t + 0.04);
+        osc.frequency.exponentialRampToValueAtTime(base - 60, t + 0.09);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+        osc.connect(gain);
+        gain.connect(this.sfxGainNode);
+        osc.start(t);
+        osc.stop(t + 0.11);
+      });
+    } else if (lower.includes('cat')) {
       // Meow: frequency upward bend then down
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -392,7 +474,7 @@ class AudioEngine {
       gain.connect(this.sfxGainNode);
       osc.start(now);
       osc.stop(now + 0.65);
-    } else if (lower.includes('dog') || lower === 'dog') {
+    } else if (lower.includes('dog')) {
       // Woof Woof: two punchy bark drops
       [0, 0.22].forEach((offset) => {
         if (!this.ctx || !this.sfxGainNode) return;
@@ -409,38 +491,72 @@ class AudioEngine {
         osc.start(t);
         osc.stop(t + 0.15);
       });
-    } else if (lower.includes('lion') || lower === 'lion') {
-      // Roar: Deep powerful filtered growl
+    } else if (lower.includes('lion') || lower.includes('tiger') || lower.includes('bear')) {
+      // Roar: Deep powerful growl
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(110, now);
-      osc.frequency.exponentialRampToValueAtTime(75, now + 0.6);
+      osc.frequency.setValueAtTime(115, now);
+      osc.frequency.linearRampToValueAtTime(135, now + 0.2);
+      osc.frequency.exponentialRampToValueAtTime(70, now + 0.65);
       gain.gain.setValueAtTime(0.45, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+      osc.start(now);
+      osc.stop(now + 0.75);
+    } else if (lower.includes('elephant')) {
+      // Trumpet / Pawoo: Brassy swell
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(280, now);
+      osc.frequency.exponentialRampToValueAtTime(680, now + 0.25);
+      osc.frequency.linearRampToValueAtTime(620, now + 0.55);
+      gain.gain.setValueAtTime(0.38, now);
       gain.gain.exponentialRampToValueAtTime(0.01, now + 0.65);
       osc.connect(gain);
       gain.connect(this.sfxGainNode);
       osc.start(now);
       osc.stop(now + 0.7);
-    } else if (lower.includes('bird') || lower.includes('parrot') || lower === 'bird') {
-      // Tweet Tweet: cheerful high chirps
-      [0, 0.12, 0.26].forEach((offset) => {
+    } else if (lower.includes('monkey')) {
+      // Ooh ooh aah aah: playful rhythmic hops
+      [0, 0.14, 0.28, 0.44].forEach((offset, idx) => {
         if (!this.ctx || !this.sfxGainNode) return;
         const t = now + offset;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(1600, t);
-        osc.frequency.exponentialRampToValueAtTime(2600, t + 0.05);
-        osc.frequency.exponentialRampToValueAtTime(2000, t + 0.08);
+        const freq = idx < 2 ? 480 : 720;
+        osc.frequency.setValueAtTime(freq, t);
+        osc.frequency.exponentialRampToValueAtTime(freq + 100, t + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(freq - 50, t + 0.1);
         gain.gain.setValueAtTime(0.35, t);
-        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.11);
         osc.connect(gain);
         gain.connect(this.sfxGainNode);
         osc.start(t);
-        osc.stop(t + 0.1);
+        osc.stop(t + 0.12);
       });
-    } else if (lower.includes('duck') || lower === 'duck') {
+    } else if (lower.includes('owl')) {
+      // Hoo Hoo: Two gentle descending mellow tones
+      [0, 0.35].forEach((offset, idx) => {
+        if (!this.ctx || !this.sfxGainNode) return;
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        const startFreq = idx === 0 ? 460 : 420;
+        osc.frequency.setValueAtTime(startFreq, t);
+        osc.frequency.exponentialRampToValueAtTime(startFreq - 60, t + 0.22);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+        osc.connect(gain);
+        gain.connect(this.sfxGainNode);
+        osc.start(t);
+        osc.stop(t + 0.27);
+      });
+    } else if (lower.includes('duck')) {
       // Quack: resonant bandpass buzzy quack
       [0, 0.18].forEach((offset) => {
         if (!this.ctx || !this.sfxGainNode) return;
@@ -457,7 +573,7 @@ class AudioEngine {
         osc.start(t);
         osc.stop(t + 0.14);
       });
-    } else if (lower.includes('frog') || lower === 'frog') {
+    } else if (lower.includes('frog')) {
       // Ribbit: rapidly modulated buzz
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -470,8 +586,54 @@ class AudioEngine {
       gain.connect(this.sfxGainNode);
       osc.start(now);
       osc.stop(now + 0.28);
+    } else if (lower.includes('dolphin') || lower.includes('whale')) {
+      // Ocean song: gentle harmonic slide
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(700, now);
+      osc.frequency.exponentialRampToValueAtTime(1300, now + 0.2);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.5);
+      gain.gain.setValueAtTime(0.28, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+      osc.start(now);
+      osc.stop(now + 0.6);
+    } else if (lower.includes('eagle') || lower.includes('peacock')) {
+      // High bird call
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(1900, now + 0.18);
+      osc.frequency.exponentialRampToValueAtTime(950, now + 0.45);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+      osc.connect(gain);
+      gain.connect(this.sfxGainNode);
+      osc.start(now);
+      osc.stop(now + 0.52);
+    } else if (lower.includes('bird') || lower.includes('parrot') || lower.includes('flamingo') || lower.includes('penguin')) {
+      // Tweet Tweet: cheerful high chirps
+      [0, 0.12, 0.24].forEach((offset) => {
+        if (!this.ctx || !this.sfxGainNode) return;
+        const t = now + offset;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1600, t);
+        osc.frequency.exponentialRampToValueAtTime(2600, t + 0.05);
+        osc.frequency.exponentialRampToValueAtTime(2000, t + 0.08);
+        gain.gain.setValueAtTime(0.32, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.09);
+        osc.connect(gain);
+        gain.connect(this.sfxGainNode);
+        osc.start(t);
+        osc.stop(t + 0.1);
+      });
     } else {
-      // Default cute animal chirp
+      // Playful water splash / chime fallback
       this.playChime();
     }
   }
@@ -545,7 +707,6 @@ class AudioEngine {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
 
-      // Match available voices or fall back cleanly
       const langCodes: Record<string, string> = {
         en: 'en-US',
         yo: 'yo-NG',
@@ -554,8 +715,79 @@ class AudioEngine {
       };
 
       utterance.lang = langCodes[lang] || 'en-US';
-      utterance.rate = 0.88; // Gentle, clear toddler tempo
-      utterance.pitch = 1.2; // Friendly, warm, inviting child/teacher tone
+      utterance.rate = 0.88;
+      utterance.pitch = 1.2;
+      utterance.volume = this.sfxVolume;
+
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      // Speech fallback silent
+    }
+  }
+
+  // --- Interactive Phonics Sound Engine ---
+
+  public playPhonicSound(
+    letter: string,
+    soundText: string,
+    word: string,
+    mode: 'short' | 'intro' | 'chant' = 'short',
+    slow = false
+  ) {
+    if (this.isMuted) return;
+
+    // 1. Synthesize an immediate acoustic bounce tone for instant tactile response
+    this.initContext();
+    if (this.ctx && this.sfxGainNode) {
+      try {
+        const now = this.ctx.currentTime;
+        const upper = letter.toUpperCase();
+        const isVowel = ['A', 'E', 'I', 'O', 'U'].includes(upper);
+
+        // Vowels get a resonant dual-harmonic bell; consonants get a crisp punchy pop
+        const baseFreq = isVowel ? 523.25 : 360 + (letter.charCodeAt(0) % 15) * 25;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = isVowel ? 'triangle' : 'sine';
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.35, now + 0.12);
+
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        osc.connect(gain);
+        gain.connect(this.sfxGainNode);
+
+        osc.start(now);
+        osc.stop(now + 0.23);
+      } catch {
+        // audio silent fallback
+      }
+    }
+
+    // 2. Play speech utterance with optimized phonetics
+    if (!('speechSynthesis' in window)) return;
+
+    try {
+      window.speechSynthesis.cancel();
+
+      let textToSpeak = '';
+      if (mode === 'short') {
+        // Focus strictly on the short letter sound (e.g. "/ah/! ... /ah/!")
+        textToSpeak = `${soundText}! ${soundText}!`;
+      } else if (mode === 'intro') {
+        // Letter name + sound + word association
+        textToSpeak = `Letter ${letter} says ${soundText}! ${letter} is for ${word}!`;
+      } else {
+        // Rhythmic chant: "ah, ah, Apple!"
+        textToSpeak = `${soundText}... ${soundText}... ${word}!`;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = 'en-US';
+      utterance.rate = slow ? 0.70 : 0.86;
+      utterance.pitch = 1.25;
       utterance.volume = this.sfxVolume;
 
       window.speechSynthesis.speak(utterance);

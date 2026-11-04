@@ -1,238 +1,248 @@
-import React, { useState } from 'react';
-import { Volume2, Sparkles, RefreshCw, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Sparkles, 
+  RotateCcw, 
+  Star, 
+  ArrowRight,
+  Compass,
+  BookOpen,
+  Search,
+  CheckCircle2,
+  Boxes
+} from 'lucide-react';
 import { useGame } from '../../context/GameContext';
 import { WorldHeader } from './WorldHeader';
 import { audio } from '../../utils/audio';
+import { LetterExplorer } from './abc/LetterExplorer';
+import { PhonicsSoundboard } from './abc/PhonicsSoundboard';
+import { FindLetterGame } from './abc/FindLetterGame';
+import { MatchObjectGame } from './abc/MatchObjectGame';
+import { CaseMatchGame } from './abc/CaseMatchGame';
+import { WordBuilderGame } from './abc/WordBuilderGame';
+import { LetterTracingGame } from './abc/LetterTracingGame';
 
-const ALPHABET_DATA = [
-  { letter: 'A', lower: 'a', word: 'Apple', emoji: '🍎', sound: 'ah', yo: 'Ápùlù', ha: 'Afal', ig: 'Apụl' },
-  { letter: 'B', lower: 'b', word: 'Butterfly', emoji: '🦋', sound: 'buh', yo: 'Labalaba', ha: 'Malam buɗe mana littafi', ig: 'Urukwu' },
-  { letter: 'C', lower: 'c', word: 'Cat', emoji: '🐱', sound: 'kuh', yo: 'Ológbò', ha: 'Kyanwa', ig: 'Nwamba' },
-  { letter: 'D', lower: 'd', word: 'Dolphin', emoji: '🐬', sound: 'duh', yo: 'Ẹja Dọ́fínì', ha: 'Kifin Dolphin', ig: 'Azụ Dọlfin' },
-  { letter: 'E', lower: 'e', word: 'Elephant', emoji: '🐘', sound: 'eh', yo: 'Erin', ha: 'Giwa', ig: 'Enyí' },
-  { letter: 'F', lower: 'f', word: 'Fish', emoji: '🐠', sound: 'fuh', yo: 'Ẹja', ha: 'Kifi', ig: 'Azụ' },
-  { letter: 'G', lower: 'g', word: 'Giraffe', emoji: '🦒', sound: 'guh', yo: 'Àgùnfọn', ha: 'Rakumin dawa', ig: 'Ezì' },
-  { letter: 'H', lower: 'h', word: 'Hat', emoji: '👒', sound: 'huh', yo: 'Fìlà', ha: 'Hula', ig: 'Okpu' },
-  { letter: 'I', lower: 'i', word: 'Ice cream', emoji: '🍦', sound: 'ih', yo: 'Aísì Kírímù', ha: 'Ais kirim', ig: 'Aịs krịm' },
-  { letter: 'J', lower: 'j', word: 'Jellyfish', emoji: '🪼', sound: 'juh', yo: 'Ẹja Jẹ́lì', ha: 'Kifin Jelly', ig: 'Azụ Jelly' },
-  { letter: 'K', lower: 'k', word: 'Kangaroo', emoji: '🦘', sound: 'kuh', yo: 'Kàngarúù', ha: 'Kangaroo', ig: 'Kangarù' },
-  { letter: 'L', lower: 'l', word: 'Lion', emoji: '🦁', sound: 'luh', yo: 'Kìnìún', ha: 'Zaki', ig: 'Ọdụm' },
-  { letter: 'M', lower: 'm', word: 'Monkey', emoji: '🐒', sound: 'muh', yo: 'Ọ̀bọ', ha: 'Biri', ig: 'Enwe' },
-  { letter: 'N', lower: 'n', word: 'Nest', emoji: '🪹', sound: 'nuh', yo: 'Tẹ́kùkù', ha: 'Sheƙa', ig: 'Akwụ' },
-  { letter: 'O', lower: 'o', word: 'Owl', emoji: '🦉', sound: 'oh', yo: 'Òwìwí', ha: 'Mujiya', ig: 'Ikwikwi' },
-  { letter: 'P', lower: 'p', word: 'Penguin', emoji: '🐧', sound: 'puh', yo: 'Pẹ́ngúìnì', ha: 'Penguin', ig: 'Penguịn' },
-  { letter: 'Q', lower: 'q', word: 'Queen', emoji: '👑', sound: 'kwuh', yo: 'Ayaba', ha: 'Sarauniya', ig: 'Eze nwanyị' },
-  { letter: 'R', lower: 'r', word: 'Rabbit', emoji: '🐰', sound: 'ruh', yo: 'Ehoro', ha: 'Zomo', ig: 'Rabitị' },
-  { letter: 'S', lower: 's', word: 'Sun', emoji: '☀️', sound: 'suh', yo: 'Oòrùn', ha: 'Rana', ig: 'Anyanwụ' },
-  { letter: 'T', lower: 't', word: 'Tiger', emoji: '🐯', sound: 'tuh', yo: 'Ẹkùn', ha: 'Damisa', ig: 'Agu' },
-  { letter: 'U', lower: 'u', word: 'Umbrella', emoji: '☂️', sound: 'uh', yo: 'Agboòrùn', ha: 'Laima', ig: 'Nche anwụ' },
-  { letter: 'V', lower: 'v', word: 'Violin', emoji: '🎻', sound: 'vuh', yo: 'Fáyólíìnì', ha: 'Goge', ig: 'Vayọlịn' },
-  { letter: 'W', lower: 'w', word: 'Whale', emoji: '🐳', sound: 'wuh', yo: 'Ẹja Àbùkè', ha: 'Kifin kunkuru', ig: 'Nnukwu azụ' },
-  { letter: 'X', lower: 'x', word: 'Xylophone', emoji: '🎵', sound: 'ks', yo: 'Zílófóònù', ha: 'Zylophone', ig: 'Zaelofon' },
-  { letter: 'Y', lower: 'y', word: 'Yak', emoji: '🐂', sound: 'yuh', yo: 'Malu Yak', ha: 'Yak', ig: 'Yak' },
-  { letter: 'Z', lower: 'z', word: 'Zebra', emoji: '🦓', sound: 'zuh', yo: 'Kẹ́tẹ́kẹ́tẹ́ abilà', ha: 'Jaki na dawa', ig: 'Zebra' }
+type AbcTab = 'explorer' | 'tracing' | 'phonics' | 'find' | 'match-object' | 'case-match' | 'word-builder';
+
+interface TabConfig {
+  id: AbcTab;
+  title: string;
+  icon: string;
+  recommendedFor: string[];
+}
+
+const TABS: TabConfig[] = [
+  { id: 'explorer', title: 'A–Z Letters', icon: '🔤', recommendedFor: ['0-1', '1-2', '2-3', '3-4', '4-5'] },
+  { id: 'tracing', title: 'Letter Tracing', icon: '✍️', recommendedFor: ['2-3', '3-4', '4-5'] },
+  { id: 'phonics', title: 'Phonics Sounds', icon: '🔊', recommendedFor: ['1-2', '2-3', '3-4', '4-5'] },
+  { id: 'find', title: 'Find Letter', icon: '🎯', recommendedFor: ['1-2', '2-3', '3-4'] },
+  { id: 'match-object', title: 'Match Objects', icon: '🍎', recommendedFor: ['2-3', '3-4', '4-5'] },
+  { id: 'case-match', title: 'Upper & Lower', icon: '🔠', recommendedFor: ['3-4', '4-5'] },
+  { id: 'word-builder', title: 'Word Builder', icon: '🧩', recommendedFor: ['4-5'] },
 ];
 
 export const AbcAdventure: React.FC = () => {
   const { currentProfile, addStar, celebrate, playPositiveFeedback, currentLang, t } = useGame();
-  const [activeTab, setActiveTab] = useState<'explorer' | 'quiz' | 'matcher'>('explorer');
-  const [selectedLetter, setSelectedLetter] = useState(ALPHABET_DATA[0]);
 
-  // Quiz state
-  const [targetItem, setTargetItem] = useState(() => ALPHABET_DATA[Math.floor(Math.random() * 8)]);
-  const [quizOptions, setQuizOptions] = useState(() => generateQuizOptions(ALPHABET_DATA[0], currentProfile.ageGroup));
+  // Pick initial tab based on child's age group
+  const getInitialTab = (): AbcTab => {
+    if (currentProfile.ageGroup === '4-5') return 'word-builder';
+    if (currentProfile.ageGroup === '3-4') return 'phonics';
+    if (currentProfile.ageGroup === '2-3') return 'find';
+    return 'explorer';
+  };
+
+  const [activeTab, setActiveTab] = useState<AbcTab>(getInitialTab);
   const [streak, setStreak] = useState(0);
+  const [sessionStars, setSessionStars] = useState(0);
+  const [tracingTargetLetter, setTracingTargetLetter] = useState<string>('A');
 
-  function generateQuizOptions(target: typeof ALPHABET_DATA[0], ageGroup: string) {
-    const count = ageGroup === '0-1' || ageGroup === '1-2' ? 2 : ageGroup === '2-3' ? 3 : 4;
-    const pool = ALPHABET_DATA.filter(i => i.letter !== target.letter);
-    const shuffledPool = [...pool].sort(() => 0.5 - Math.random());
-    const choices = [target, ...shuffledPool.slice(0, count - 1)];
-    return choices.sort(() => 0.5 - Math.random());
-  }
-
-  const handleNextQuiz = (nextTarget = ALPHABET_DATA[Math.floor(Math.random() * ALPHABET_DATA.length)]) => {
-    setTargetItem(nextTarget);
-    setQuizOptions(generateQuizOptions(nextTarget, currentProfile.ageGroup));
-  };
-
-  const handleLetterClick = (item: typeof ALPHABET_DATA[0]) => {
-    setSelectedLetter(item);
+  const handleGoToTracing = (letter: string) => {
+    setTracingTargetLetter(letter);
+    setActiveTab('tracing');
     audio.playPop(1.1);
-
-    // Speak letter & word in selected language
-    const langWord = currentLang === 'yo' ? item.yo : currentLang === 'ha' ? item.ha : currentLang === 'ig' ? item.ig : item.word;
-    audio.speak(`${item.letter}. ${item.letter} is for ${langWord}`, currentLang);
   };
+  const [exploredLetters, setExploredLetters] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(`lgw_explored_letters_${currentProfile.id}`);
+      return saved ? JSON.parse(saved) : ['A', 'B', 'C'];
+    } catch {
+      return ['A', 'B', 'C'];
+    }
+  });
 
-  const handleQuizAnswer = (item: typeof ALPHABET_DATA[0]) => {
-    if (item.letter === targetItem.letter) {
-      addStar(1);
-      playPositiveFeedback();
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      if (newStreak % 3 === 0) {
+  // Save explored letters
+  const handleExploredLetter = (letter: string) => {
+    if (!exploredLetters.includes(letter)) {
+      const updated = [...exploredLetters, letter];
+      setExploredLetters(updated);
+      try {
+        localStorage.setItem(`lgw_explored_letters_${currentProfile.id}`, JSON.stringify(updated));
+      } catch {
+        // storage fallback
+      }
+
+      // Check milestones
+      if (updated.length === 10) {
+        addStar(1);
         celebrate({
-          title: 'ABC Explorer Champion!',
-          subtitle: `Incredible! Streak of ${newStreak} letters found!`,
-          stars: 2
+          title: '10 Letters Explored!',
+          subtitle: 'You are an Alphabet Explorer Superstar!',
+          stars: 1
+        });
+      } else if (updated.length === 26) {
+        addStar(3);
+        celebrate({
+          title: 'All 26 Letters Unlocked!',
+          subtitle: 'Incredible! You discovered every letter from A to Z!',
+          stars: 3
         });
       }
-      setTimeout(() => {
-        handleNextQuiz();
-      }, 900);
-    } else {
-      audio.playGentleTryAgain();
-      audio.speak(t.tryAgain, currentLang);
     }
+  };
+
+  const handleCorrectAnswer = () => {
+    addStar(1);
+    setSessionStars(prev => prev + 1);
+    playPositiveFeedback();
+
+    const newStreak = streak + 1;
+    setStreak(newStreak);
+
+    // Streak celebration milestones (3, 6, 9)
+    if (newStreak > 0 && newStreak % 3 === 0) {
+      celebrate({
+        title: 'ABC Explorer Champion!',
+        subtitle: `Incredible! Streak of ${newStreak} answers in a row!`,
+        stars: 2
+      });
+    }
+  };
+
+  const handleNextActivity = () => {
+    const currentIndex = TABS.findIndex(t => t.id === activeTab);
+    const nextIndex = (currentIndex + 1) % TABS.length;
+    setActiveTab(TABS[nextIndex].id);
+    audio.playPop(1.1);
   };
 
   return (
     <div className="min-h-screen bg-linear-to-b from-indigo-50 via-sky-50 to-pink-50 flex flex-col">
+      {/* World Navigation Header */}
       <WorldHeader
         title={t.worlds['abc-adventure'].title}
-        instructionText="Tap letters to hear their sounds and find the magic letters!"
-        accentColor="bg-indigo-400"
+        instructionText="Welcome to ABC Adventure! Explore letters A to Z, match familiar friends, and spell words!"
+        accentColor="bg-indigo-500"
       />
 
-      {/* Sub-mode selector tabs */}
-      <div className="flex justify-center gap-2 p-3 bg-white/70 backdrop-blur-xs border-b border-indigo-100">
-        <button
-          onClick={() => { setActiveTab('explorer'); audio.playPop(); }}
-          className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
-            activeTab === 'explorer'
-              ? 'bg-indigo-500 text-white shadow-md scale-105'
-              : 'bg-white text-indigo-900 hover:bg-indigo-50'
-          }`}
-        >
-          🔤 Letter Explorer
-        </button>
+      {/* Interactive Activity Mode Switcher Tabs */}
+      <div className="bg-white/90 backdrop-blur-xs border-b-2 border-indigo-100 shadow-xs px-2 sm:px-4 py-2 sticky top-[57px] z-20">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const isRecommended = tab.recommendedFor.includes(currentProfile.ageGroup);
 
-        <button
-          onClick={() => {
-            setActiveTab('quiz');
-            audio.playPop();
-            handleNextQuiz();
-          }}
-          className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
-            activeTab === 'quiz'
-              ? 'bg-indigo-500 text-white shadow-md scale-105'
-              : 'bg-white text-indigo-900 hover:bg-indigo-50'
-          }`}
-        >
-          🎯 Find the Letter
-        </button>
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    audio.playPop(1.0);
+                  }}
+                  className={`relative flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl text-xs sm:text-sm font-black whitespace-nowrap transition-all cursor-pointer ${
+                    isActive
+                      ? 'btn-3d-amber text-amber-950 scale-105'
+                      : 'bg-indigo-50/70 hover:bg-indigo-100/70 text-indigo-950 border border-indigo-200'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.title}</span>
+
+                  {isRecommended && !isActive && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" title="Recommended for your age" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick Next Activity CTA */}
+          <button
+            onClick={handleNextActivity}
+            className="btn-3d-white hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-indigo-900 shrink-0"
+            title="Next Activity"
+          >
+            <span>Next Activity</span>
+            <ArrowRight className="w-3.5 h-3.5 text-indigo-600" />
+          </button>
+        </div>
       </div>
 
-      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col">
-        {/* MODE 1: EXPLORER */}
+      {/* Main Learning Playground Content */}
+      <main className="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-6 flex flex-col items-center">
         {activeTab === 'explorer' && (
-          <div className="flex-1 flex flex-col md:flex-row gap-6 items-center">
-            {/* Spotlight Card */}
-            <div className="w-full md:w-80 shrink-0 bg-white rounded-3xl p-6 shadow-xl border-4 border-indigo-200 flex flex-col items-center text-center animate-pop">
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-6xl font-black text-indigo-600">{selectedLetter.letter}</span>
-                <span className="text-4xl font-extrabold text-indigo-400">{selectedLetter.lower}</span>
-              </div>
-
-              <div className="text-7xl my-3 filter drop-shadow-md animate-bounce-gentle">
-                {selectedLetter.emoji}
-              </div>
-
-              <div className="text-xl font-bold text-slate-800">
-                {currentLang === 'yo' ? selectedLetter.yo : currentLang === 'ha' ? selectedLetter.ha : currentLang === 'ig' ? selectedLetter.ig : selectedLetter.word}
-              </div>
-
-              <div className="text-xs text-indigo-500 font-semibold mt-1">
-                Sound: &ldquo;{selectedLetter.sound}&rdquo;
-              </div>
-
-              <button
-                onClick={() => handleLetterClick(selectedLetter)}
-                className="mt-4 flex items-center gap-2 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold px-5 py-2.5 text-sm shadow-md transition-transform active:scale-95"
-              >
-                <Volume2 className="w-4 h-4" />
-                <span>Hear Letter</span>
-              </button>
-            </div>
-
-            {/* Letter Grid A-Z */}
-            <div className="flex-1 w-full bg-white/90 rounded-3xl p-4 sm:p-6 shadow-lg border-2 border-indigo-100">
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-2 sm:gap-3">
-                {ALPHABET_DATA.map((item) => {
-                  const isCurrent = selectedLetter.letter === item.letter;
-                  return (
-                    <button
-                      key={item.letter}
-                      onClick={() => handleLetterClick(item)}
-                      className={`h-14 sm:h-16 rounded-2xl flex flex-col items-center justify-center font-black transition-all active:scale-95 border-2 ${
-                        isCurrent
-                          ? 'bg-indigo-500 text-white border-indigo-600 shadow-md scale-105'
-                          : 'bg-white hover:bg-indigo-50 text-indigo-900 border-indigo-100 shadow-xs'
-                      }`}
-                    >
-                      <span className="text-lg sm:text-xl">{item.letter}</span>
-                      <span className="text-xs opacity-70 -mt-1">{item.emoji}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          <LetterExplorer
+            currentLang={currentLang}
+            ageGroup={currentProfile.ageGroup}
+            onExploredLetter={handleExploredLetter}
+            exploredLetters={exploredLetters}
+            onGoToTracing={handleGoToTracing}
+          />
         )}
 
-        {/* MODE 2: FIND THE LETTER QUIZ */}
-        {activeTab === 'quiz' && (
-          <div className="flex-1 flex flex-col items-center justify-center max-w-xl mx-auto w-full text-center">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border-4 border-indigo-300 w-full animate-pop">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold mb-4">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-600" />
-                <span>Streak: {streak} correct</span>
-              </div>
+        {activeTab === 'tracing' && (
+          <LetterTracingGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+            initialLetter={tracingTargetLetter}
+          />
+        )}
 
-              <h2 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">
-                Can you find the letter:
-              </h2>
+        {activeTab === 'phonics' && (
+          <PhonicsSoundboard
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              {/* Big Audio Prompt Button */}
-              <button
-                onClick={() => {
-                  audio.playPop();
-                  audio.speak(`Find the letter ${targetItem.letter}`, currentLang);
-                }}
-                className="my-3 inline-flex items-center gap-3 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-900 font-extrabold px-6 py-3 text-lg shadow-sm border border-indigo-300 transition-transform active:scale-95"
-              >
-                <Volume2 className="w-6 h-6 text-indigo-600" />
-                <span>Letter {targetItem.letter}</span>
-              </button>
+        {activeTab === 'find' && (
+          <FindLetterGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              <div className="text-5xl my-4 animate-float">
-                {targetItem.emoji}
-              </div>
+        {activeTab === 'match-object' && (
+          <MatchObjectGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              {/* Choices Buttons */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-6">
-                {quizOptions.map((choice) => (
-                  <button
-                    key={choice.letter}
-                    onClick={() => handleQuizAnswer(choice)}
-                    className="h-20 sm:h-24 rounded-2xl bg-indigo-50 hover:bg-indigo-100 border-3 border-indigo-200 hover:border-indigo-400 text-indigo-950 font-black text-3xl sm:text-4xl shadow-sm transition-transform active:scale-95 flex items-center justify-center gap-2"
-                  >
-                    <span>{choice.letter}</span>
-                    <span className="text-2xl text-indigo-400">{choice.lower}</span>
-                  </button>
-                ))}
-              </div>
+        {activeTab === 'case-match' && (
+          <CaseMatchGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
+        )}
 
-              <button
-                onClick={() => handleNextQuiz()}
-                className="mt-6 inline-flex items-center gap-1.5 text-xs text-indigo-600 font-bold hover:underline"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Try Another Letter</span>
-              </button>
-            </div>
-          </div>
+        {activeTab === 'word-builder' && (
+          <WordBuilderGame
+            ageGroup={currentProfile.ageGroup}
+            currentLang={currentLang}
+            onCorrectAnswer={handleCorrectAnswer}
+            streak={streak}
+          />
         )}
       </main>
     </div>
